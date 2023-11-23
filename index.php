@@ -3,7 +3,7 @@
 $linktag = <<<eod
 <link rel="stylesheet" href="styles.css?date('YmdHis');">
 eod;
-class sqler{
+class Ser{
     private $db;
     private $v;
     private $q;
@@ -29,11 +29,11 @@ class sqler{
         UPDATE user SET d2 = DATE('now','localtime') WHERE rowid = new.rowid;
         END;
         SQL;
-        if(!isTbl("user")){
-            $this.db->exec(tbl);
+        if(!$this->isTbl("user")){
+            $this->db->exec($tbl);
         }
-        if(!isTrg("user_up")){
-            $this.db->exec(trg);
+        if(!$this->isTrg("user_up")){
+            $this->db->exec($trg);
         }
     }
     private function tbl_log(){
@@ -58,11 +58,11 @@ class sqler{
         UPDATE log SET d2 = DATE('now','localtime') WHERE rowid = new.rowid;
         END;
         SQL;
-        if(!isTbl("log")){
-            $this.db->exec(tbl);
+        if(!$this->isTbl("log")){
+            $this->db->exec($tbl);
         }
-        if(!isTrg("log_up")){
-            $this.db->exec(trg);
+        if(!$this->isTrg("log_up")){
+            $this->db->exec($trg);
         }
 
     }
@@ -70,8 +70,8 @@ class sqler{
         $isT=<<<SQL
         SELECT count(*)
         FROM sqlite_master
-        WHERE TYPE='table'
-        AND NAME='$t'
+        WHERE TYPE=table
+        AND NAME=$t
         SQL;
         return $this->db->querySingle($isT);
     }
@@ -79,8 +79,8 @@ class sqler{
         $isTr=<<<SQL
         SELECT count(*)
         FROM sqlite_master
-        WHERE TYPE='trigger'
-        AND NAME='$tr'
+        WHERE TYPE=trigger
+        AND NAME=$tr
         SQL;
         return $this->db->querySingle($isTr);
     }
@@ -113,8 +113,7 @@ class sqler{
     }
 }
 function test(){
-    $test = new sqler();
-    $test->make_tbl();
+    $test = new Ser();
 }
 //Handler
 function Handler(){
@@ -144,7 +143,7 @@ function isUsr(){
     $passcode=$_GET["passcode"];
     if($name&&$passcode){
         $q="select t1,t2 from user where t1='$name' and t2='$passcode'";
-        $db=new sqler();
+        $db=new Ser();
         $db->Que($q);
         $res = $db->Sel();
         if($name==$res[0]&&$passcode==$res[1]){
@@ -184,7 +183,7 @@ function Register(){
             exit;
         }
         $q = "select t1,t2 from user where t1='$name' and t2='$passcode'";
-        $db=new sqler();
+        $db=new Ser();
         $db->Que($q);
         $res = $db->Sel();
         if($name==$res[0]){
@@ -247,7 +246,7 @@ function Check(){
         myheader("./index.php");
         exit;
     }
-    $db=new sqler();
+    $db=new Ser();
     $q="select t1,t2,id from user where t1='$name' and t2='$passcode'";
     $db->Que($q);
     $res=$db->Sel();
@@ -289,7 +288,7 @@ function Dash(){
         $category=empty($_POST['t1'])?null:$_POST['t1'];
         $title=$_POST['t2'];
         $text=empty($_POST['t3'])?null:$_POST['t3'];
-        $db=new sqler();
+        $db=new Ser();
         $q="select id from user where t1='$name'";
         $db->Que($q);
         $res=$db->Sel();
@@ -327,7 +326,7 @@ function Dash(){
 // }
 //Diary
 function ls_all(){
-    $db = new sqler();
+    $db = new Ser();
     $q = <<<SQL
     SELECT log.*,user.t1 AS usr
     FROM log
@@ -339,7 +338,7 @@ function ls_all(){
     Diary($db->All());
 }
 function ls_usr($name){
-    $db = new sqler();
+    $db = new Ser();
     $q=<<<SQL
     SELECT log.*,user.t1 AS usr
     FROM log
@@ -417,6 +416,7 @@ function Calendar_selector(){
     }
     echo<<<eof
     </select><select name="month">
+
     eof;
     $cnt=1;
     while($cnt<13){
@@ -448,6 +448,7 @@ function Calendar($m=null,$y=null){
         $y=date("Y");
     }
     echo<<<eof
+
     <br><font size=4><b>$y.$m</b></font><br>
     <table border='1'<tr>
     <td bgcolor='#ffaaaa' align='center' width='35'><font size='4'><b>S</b></font></td>
@@ -488,6 +489,7 @@ function Calendar($m=null,$y=null){
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -507,6 +509,7 @@ function Calendar($m=null,$y=null){
 <body>
     <header>
         <h1>maf</h1>
+
     </header>
     <main>
         <h2>Contents</h2>
