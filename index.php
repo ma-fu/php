@@ -3,13 +3,90 @@
 $linktag = <<<eod
 <link rel="stylesheet" href="styles.css?date('YmdHis');">
 eod;
-class sqler{
+class Ser{
     private $db;
     private $v;
     private $q;
     private $b;
     function __construct($path="blog"){
         $this->db=new SQLite3($path);
+        $this->make_tbl();
+    }
+    private function tbl_usr(){
+        $tbl=<<<SQL
+        CREATE TABLE user(
+        id INTEGER PRIMARY KEY autoincrement,
+        t1 TEXT,
+        t2 TEXT,
+        d1 TEXT DEFAULT (DATETIME('now','localtime')),
+        d2 TEXT DEFAULT (DATETIME('now','localtime'))
+        )
+        SQL;
+        $trg=<<<SQL
+        CREATE TRIGGER usr_up
+        AFTER UPDATE ON user
+        BEGIN
+        UPDATE user SET d2 = DATE('now','localtime') WHERE rowid = new.rowid;
+        END;
+        SQL;
+        if(!$this->isTbl("user")){
+            $this->db->exec($tbl);
+        }
+        if(!$this->isTrg("user_up")){
+            $this->db->exec($trg);
+        }
+    }
+    private function tbl_log(){
+        $tbl=<<<SQL
+        CREATE TABLE log(
+        id INTEGER PRIMARY KEY autoincrement,
+        t1 TEXT,
+        t2 TEXT,
+        t3 TEXT,
+        t4 TEXT,
+        i1 INTEGER,
+        i2 INTEGER,
+        d1 TEXT DEFAULT (DATE('now','localtime')),
+        d2 TEXT DEFAULT (DATE('now','localtime')),
+        FOREIGN KEY (i1) REFERENCES user (id) ON DELETE CASCADE
+        )
+        SQL;
+        $trg=<<<SQL
+        CREATE TRIGGER log_up
+        AFTER UPDATE ON log
+        BEGIN
+        UPDATE log SET d2 = DATE('now','localtime') WHERE rowid = new.rowid;
+        END;
+        SQL;
+        if(!$this->isTbl("log")){
+            $this->db->exec($tbl);
+        }
+        if(!$this->isTrg("log_up")){
+            $this->db->exec($trg);
+        }
+
+    }
+    private function isTbl($t){
+        $isT=<<<SQL
+        SELECT count(*)
+        FROM sqlite_master
+        WHERE TYPE=table
+        AND NAME=$t
+        SQL;
+        return $this->db->querySingle($isT);
+    }
+    private function isTrg($tr){
+        $isTr=<<<SQL
+        SELECT count(*)
+        FROM sqlite_master
+        WHERE TYPE=trigger
+        AND NAME=$tr
+        SQL;
+        return $this->db->querySingle($isTr);
+    }
+    function make_tbl(){
+        $this->tbl_usr();
+        $this->tbl_log();
     }
     function Que($q){
         $this->q=$q;
@@ -36,7 +113,7 @@ class sqler{
     }
 }
 function test(){
-    $test = new sqler();
+    $test = new Ser();
 }
 //Handler
 function Handler(){
@@ -66,7 +143,7 @@ function isUsr(){
     $passcode=$_GET["passcode"];
     if($name&&$passcode){
         $q="select t1,t2 from user where t1='$name' and t2='$passcode'";
-        $db=new sqler();
+        $db=new Ser();
         $db->Que($q);
         $res = $db->Sel();
         if($name==$res[0]&&$passcode==$res[1]){
@@ -106,7 +183,7 @@ function Register(){
             exit;
         }
         $q = "select t1,t2 from user where t1='$name' and t2='$passcode'";
-        $db=new sqler();
+        $db=new Ser();
         $db->Que($q);
         $res = $db->Sel();
         if($name==$res[0]){
@@ -169,7 +246,7 @@ function Check(){
         myheader("./index.php");
         exit;
     }
-    $db=new sqler();
+    $db=new Ser();
     $q="select t1,t2,id from user where t1='$name' and t2='$passcode'";
     $db->Que($q);
     $res=$db->Sel();
@@ -211,7 +288,7 @@ function Dash(){
         $category=empty($_POST['t1'])?null:$_POST['t1'];
         $title=$_POST['t2'];
         $text=empty($_POST['t3'])?null:$_POST['t3'];
-        $db=new sqler();
+        $db=new Ser();
         $q="select id from user where t1='$name'";
         $db->Que($q);
         $res=$db->Sel();
@@ -249,7 +326,7 @@ function Dash(){
 // }
 //Diary
 function ls_all(){
-    $db = new sqler();
+    $db = new Ser();
     $q = <<<SQL
     SELECT log.*,user.t1 AS usr
     FROM log
@@ -258,11 +335,10 @@ function ls_all(){
     ORDER BY id DESC
     SQL;
     $db->Que($q);
-    $res = $db->All();
-    Diary($res);
+    Diary($db->All());
 }
 function ls_usr($name){
-    $db = new sqler();
+    $db = new Ser();
     $q=<<<SQL
     SELECT log.*,user.t1 AS usr
     FROM log
@@ -272,8 +348,7 @@ function ls_usr($name){
     ORDER BY log.id DESC
     SQL;
     $db->Que($q);
-    $res = $db->All();
-    Diary($res);
+    Diary($db->All());
 }
 function Diary($res){
     while ($row = $res->fetchArray()) {
@@ -341,6 +416,7 @@ function Calendar_selector(){
     }
     echo<<<eof
     </select><select name="month">
+
     eof;
     $cnt=1;
     while($cnt<13){
@@ -372,6 +448,7 @@ function Calendar($m=null,$y=null){
         $y=date("Y");
     }
     echo<<<eof
+
     <br><font size=4><b>$y.$m</b></font><br>
     <table border='1'<tr>
     <td bgcolor='#ffaaaa' align='center' width='35'><font size='4'><b>S</b></font></td>
@@ -412,6 +489,7 @@ function Calendar($m=null,$y=null){
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -431,6 +509,7 @@ function Calendar($m=null,$y=null){
 <body>
     <header>
         <h1>maf</h1>
+
     </header>
     <main>
         <h2>Contents</h2>
