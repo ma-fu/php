@@ -15,19 +15,19 @@ class sqler{
     private function tbl_usr(){
         $tbl=<<<SQL
         CREATE TABLE user(
-        id integer primary key autoincrement,
-        t1 text,
-        t2 text,
-        d1 text default (datetime('now','localtime')),
-        d2 text default (datetime('now','localtime'))
+        id INTEGER PRIMARY KEY autoincrement,
+        t1 TEXT,
+        t2 TEXT,
+        d1 TEXT DEFAULT (DATETIME('now','localtime')),
+        d2 TEXT DEFAULT (DATETIME('now','localtime'))
         )
         SQL;
         $trg=<<<SQL
         CREATE TRIGGER usr_up
-        after update on user
-        begin
-        update user set d2 = date('now','localtime') where rowid = new.rowid;
-        end;
+        AFTER UPDATE ON user
+        BEGIN
+        UPDATE user SET d2 = DATE('now','localtime') WHERE rowid = new.rowid;
+        END;
         SQL;
         if(!isTbl("user")){
             $this.db->exec(tbl);
@@ -39,24 +39,24 @@ class sqler{
     private function tbl_log(){
         $tbl=<<<SQL
         CREATE TABLE log(
-        id integer primary key autoincrement,
-        t1 text,
-        t2 text,
-        t3 text,
-        t4 text,
-        i1 integer,
-        i2 integer,
-        d1 text default (date('now','localtime')),
-        d2 text default (date('now','localtime')),
-        foreign key (i1) references user (id) on delete cascade
+        id INTEGER PRIMARY KEY autoincrement,
+        t1 TEXT,
+        t2 TEXT,
+        t3 TEXT,
+        t4 TEXT,
+        i1 INTEGER,
+        i2 INTEGER,
+        d1 TEXT DEFAULT (DATE('now','localtime')),
+        d2 TEXT DEFAULT (DATE('now','localtime')),
+        FOREIGN KEY (i1) REFERENCES user (id) ON DELETE CASCADE
         )
         SQL;
         $trg=<<<SQL
         CREATE TRIGGER log_up
-        after update on log
-        begin
-        update log set d2 = date('now','localtime') where rowid = new.rowid;
-        end;
+        AFTER UPDATE ON log
+        BEGIN
+        UPDATE log SET d2 = DATE('now','localtime') WHERE rowid = new.rowid;
+        END;
         SQL;
         if(!isTbl("log")){
             $this.db->exec(tbl);
@@ -336,8 +336,7 @@ function ls_all(){
     ORDER BY id DESC
     SQL;
     $db->Que($q);
-    $res = $db->All();
-    Diary($res);
+    Diary($db->All());
 }
 function ls_usr($name){
     $db = new sqler();
@@ -350,8 +349,7 @@ function ls_usr($name){
     ORDER BY log.id DESC
     SQL;
     $db->Que($q);
-    $res = $db->All();
-    Diary($res);
+    Diary($db->All());
 }
 function Diary($res){
     while ($row = $res->fetchArray()) {
