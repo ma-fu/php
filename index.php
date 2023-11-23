@@ -10,6 +10,83 @@ class sqler{
     private $b;
     function __construct($path="blog"){
         $this->db=new SQLite3($path);
+        $this->make_tbl();
+    }
+    private function tbl_usr(){
+        $tbl=<<<SQL
+        CREATE TABLE user(
+        id integer primary key autoincrement,
+        t1 text,
+        t2 text,
+        d1 text default (datetime('now','localtime')),
+        d2 text default (datetime('now','localtime'))
+        )
+        SQL;
+        $trg=<<<SQL
+        CREATE TRIGGER usr_up
+        after update on user
+        begin
+        update user set d2 = date('now','localtime') where rowid = new.rowid;
+        end;
+        SQL;
+        if(!isTbl("user")){
+            $this.db->exec(tbl);
+        }
+        if(!isTrg("user_up")){
+            $this.db->exec(trg);
+        }
+    }
+    private function tbl_log(){
+        $tbl=<<<SQL
+        CREATE TABLE log(
+        id integer primary key autoincrement,
+        t1 text,
+        t2 text,
+        t3 text,
+        t4 text,
+        i1 integer,
+        i2 integer,
+        d1 text default (date('now','localtime')),
+        d2 text default (date('now','localtime')),
+        foreign key (i1) references user (id) on delete cascade
+        )
+        SQL;
+        $trg=<<<SQL
+        CREATE TRIGGER log_up
+        after update on log
+        begin
+        update log set d2 = date('now','localtime') where rowid = new.rowid;
+        end;
+        SQL;
+        if(!isTbl("log")){
+            $this.db->exec(tbl);
+        }
+        if(!isTrg("log_up")){
+            $this.db->exec(trg);
+        }
+
+    }
+    private function isTbl($t){
+        $isT=<<<SQL
+        SELECT count(*)
+        FROM sqlite_master
+        WHERE TYPE='table'
+        AND NAME='$t'
+        SQL;
+        return $this->db->querySingle($isT);
+    }
+    private function isTrg($tr){
+        $isTr=<<<SQL
+        SELECT count(*)
+        FROM sqlite_master
+        WHERE TYPE='trigger'
+        AND NAME='$tr'
+        SQL;
+        return $this->db->querySingle($isTr);
+    }
+    function make_tbl(){
+        $this->tbl_usr();
+        $this->tbl_log();
     }
     function Que($q){
         $this->q=$q;
@@ -37,6 +114,7 @@ class sqler{
 }
 function test(){
     $test = new sqler();
+    $test->make_tbl();
 }
 //Handler
 function Handler(){
