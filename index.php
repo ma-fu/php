@@ -97,6 +97,17 @@ class Ser{
     function Bind($b){
         $this->b=$b;
     }
+    function Prms($q=null,$b=null,$v=null){
+        if($q){
+            $this->Que($q);
+        }
+        if($b){
+            $this->Bind($b);
+        }
+        if($v){
+            $this->Val($v);
+        }
+    }
     function Sel(){
         $r=$this->db->query($this->q);
         return $r->fetchArray();
